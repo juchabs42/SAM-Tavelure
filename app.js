@@ -1,433 +1,170 @@
-const STAGE_DEFINITIONS = [
-  {
-    id: 1,
-    shortLabel: "Aucune différenciation visible",
-    technicalLabel: "Pseudothèces sans différenciation",
-    date: "2026-02-10"
-  },
-  {
-    id: 2,
-    shortLabel: "Les futures structures commencent à se former",
-    technicalLabel: "Pseudothèce avec asques en voie de différenciation",
-    date: "2026-02-18"
-  },
-  {
-    id: 3,
-    shortLabel: "Les sacs contenant les spores sont formés",
-    technicalLabel: "Pseudothèce avec asques différenciés",
-    date: "2026-02-26"
-  },
-  {
-    id: 4,
-    shortLabel: "Les spores sont visibles mais encore claires",
-    technicalLabel: "Pseudothèce avec ascospores claires",
-    date: "2026-03-03"
-  },
-  {
-    id: 5,
-    shortLabel: "Début de coloration des spores",
-    technicalLabel: "Pseudothèce avec 1 à 15 asques contenant des ascospores colorées",
-    date: "2026-03-08"
-  },
-  {
-    id: 6,
-    shortLabel: "Maturation bien engagée",
-    technicalLabel: "Pseudothèce avec 16 à 50 asques contenant des ascospores colorées",
-    date: "2026-03-11"
-  },
-  {
-    id: 7,
-    shortLabel: "Spores prêtes à être projetées",
-    technicalLabel: "Pseudothèce avec plus de 50 asques contenant des ascospores colorées",
-    date: "2026-03-14"
-  }
+const STAGES=[
+{id:1,simple:"Aucune différenciation visible",tech:"Pseudothèces sans différenciation",date:"2026-02-10"},
+{id:2,simple:"Les futures structures commencent à se former",tech:"Pseudothèce avec asques en voie de différenciation",date:"2026-02-18"},
+{id:3,simple:"Les sacs contenant les spores sont formés",tech:"Pseudothèce avec asques différenciés",date:"2026-02-26"},
+{id:4,simple:"Les spores sont visibles mais encore claires",tech:"Pseudothèce avec ascospores claires",date:"2026-03-03"},
+{id:5,simple:"Début de coloration des spores",tech:"Pseudothèce avec 1 à 15 asques contenant des ascospores colorées",date:"2026-03-08"},
+{id:6,simple:"Maturation bien engagée",tech:"Pseudothèce avec 16 à 50 asques contenant des ascospores colorées",date:"2026-03-11"},
+{id:7,simple:"Spores prêtes à être projetées",tech:"Pseudothèce avec plus de 50 asques contenant des ascospores colorées",date:"2026-03-14"}];
+
+const MONITORING={seasonClosed:true,closedOn:"2026-06-18"};
+const DEMO=[
+{id:1,episode:"Épisode 1",date_obs:"2026-03-14",heure_obs:"03:00",pluie_mm:4.8,spores:13,statut:"Validé",comptage_termine:true},
+{id:2,episode:"Épisode 2",date_obs:"2026-03-23",heure_obs:"12:00",pluie_mm:9.7,spores:52,statut:"Validé",comptage_termine:true},
+{id:3,episode:"Épisode 3",date_obs:"2026-04-05",heure_obs:"06:00",pluie_mm:7.6,spores:0,statut:"Pas de contamination",comptage_termine:true},
+{id:4,episode:"Épisode 4",date_obs:"2026-04-18",heure_obs:"21:00",pluie_mm:13.5,spores:95,statut:"Validé",comptage_termine:true},
+{id:5,episode:"Épisode 5",date_obs:"2026-05-02",heure_obs:"06:00",pluie_mm:3.4,spores:25,statut:"Validé",comptage_termine:true},
+{id:6,episode:"Épisode 6",date_obs:"2026-05-21",heure_obs:"15:00",pluie_mm:10.7,spores:47,statut:"Validé",comptage_termine:true},
+{id:7,episode:"Épisode 7",date_obs:"2026-06-10",heure_obs:"03:00",pluie_mm:5.5,spores:null,statut:"En cours",comptage_termine:false}
 ];
 
-const MONITORING = {
-  seasonClosed: true,
-  closedOn: "2026-06-18"
-};
+const fd=d=>new Date(`${d}T12:00:00`).toLocaleDateString("fr-FR");
+const fdt=(d,h)=>new Date(`${d}T${h||"00:00"}:00`).toLocaleString("fr-FR",{day:"2-digit",month:"2-digit",year:"numeric",hour:"2-digit",minute:"2-digit"});
+const fn=v=>new Intl.NumberFormat("fr-FR",{maximumFractionDigits:1}).format(v);
 
-const SPORE_RECORDS = [
-  { episode: "Épisode 1", start: "2026-03-14T00:00", end: "2026-03-14T03:00", rain: 1.8, spores: 4, status: "Validé", countingDone: true },
-  { episode: "Épisode 1", start: "2026-03-14T03:00", end: "2026-03-14T06:00", rain: 2.2, spores: 7, status: "Validé", countingDone: true },
-  { episode: "Épisode 1", start: "2026-03-14T06:00", end: "2026-03-14T09:00", rain: 0.8, spores: 2, status: "Validé", countingDone: true },
+let sb=null,records=[],chart=null;
 
-  { episode: "Épisode 2", start: "2026-03-23T09:00", end: "2026-03-23T12:00", rain: 3.6, spores: 15, status: "Validé", countingDone: true },
-  { episode: "Épisode 2", start: "2026-03-23T12:00", end: "2026-03-23T15:00", rain: 4.4, spores: 26, status: "Validé", countingDone: true },
-  { episode: "Épisode 2", start: "2026-03-23T15:00", end: "2026-03-23T18:00", rain: 1.7, spores: 11, status: "Validé", countingDone: true },
-
-  { episode: "Épisode 3", start: "2026-04-05T00:00", end: "2026-04-05T03:00", rain: 2.9, spores: 0, status: "Pas de contamination", countingDone: true },
-  { episode: "Épisode 3", start: "2026-04-05T03:00", end: "2026-04-05T06:00", rain: 3.5, spores: 0, status: "Pas de contamination", countingDone: true },
-  { episode: "Épisode 3", start: "2026-04-05T06:00", end: "2026-04-05T09:00", rain: 1.2, spores: 0, status: "Pas de contamination", countingDone: true },
-
-  { episode: "Épisode 4", start: "2026-04-18T18:00", end: "2026-04-18T21:00", rain: 5.4, spores: 32, status: "Validé", countingDone: true },
-  { episode: "Épisode 4", start: "2026-04-18T21:00", end: "2026-04-19T00:00", rain: 6.0, spores: 44, status: "Validé", countingDone: true },
-  { episode: "Épisode 4", start: "2026-04-19T00:00", end: "2026-04-19T03:00", rain: 2.1, spores: 19, status: "Validé", countingDone: true },
-
-  { episode: "Épisode 5", start: "2026-05-02T03:00", end: "2026-05-02T06:00", rain: 1.3, spores: 8, status: "Validé", countingDone: true },
-  { episode: "Épisode 5", start: "2026-05-02T06:00", end: "2026-05-02T09:00", rain: 1.5, spores: 12, status: "Validé", countingDone: true },
-  { episode: "Épisode 5", start: "2026-05-02T09:00", end: "2026-05-02T12:00", rain: 0.6, spores: 5, status: "Validé", countingDone: true },
-
-  { episode: "Épisode 6", start: "2026-05-21T12:00", end: "2026-05-21T15:00", rain: 4.2, spores: 18, status: "Validé", countingDone: true },
-  { episode: "Épisode 6", start: "2026-05-21T15:00", end: "2026-05-21T18:00", rain: 4.8, spores: 23, status: "Validé", countingDone: true },
-  { episode: "Épisode 6", start: "2026-05-21T18:00", end: "2026-05-21T21:00", rain: 1.7, spores: 6, status: "Validé", countingDone: true },
-
-  { episode: "Épisode 7", start: "2026-06-10T00:00", end: "2026-06-10T03:00", rain: 3.1, spores: 0, status: "En cours", countingDone: false },
-  { episode: "Épisode 7", start: "2026-06-10T03:00", end: "2026-06-10T06:00", rain: 2.4, spores: 0, status: "En cours", countingDone: false }
-];
-
-const formatDate = (value) => new Date(`${value}T12:00:00`).toLocaleDateString("fr-FR");
-const formatDateTime = (value) => new Date(value).toLocaleString("fr-FR", {
-  day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit"
-});
-const formatNumber = (value) => new Intl.NumberFormat("fr-FR", { maximumFractionDigits: 1 }).format(value);
-
-const chartBaseOptions = {
-  responsive: true,
-  maintainAspectRatio: false,
-  plugins: {
-    legend: { position: "bottom", labels: { usePointStyle: true, boxWidth: 8, padding: 18 } },
-    tooltip: { intersect: false, mode: "index" }
-  },
-  scales: {
-    x: { grid: { display: false }, ticks: { maxRotation: 0, autoSkip: true, maxTicksLimit: 12 } }
-  }
-};
-
-let sporeChart;
-let displayedRows = [];
-
-function getBiofixDate() {
-  const stage7 = STAGE_DEFINITIONS.find((stage) => stage.id === 7 && stage.date);
-  return stage7 ? stage7.date : null;
+function configured(){
+ const c=window.SAM_CONFIG||{};
+ return c.supabaseUrl&&c.supabaseAnonKey&&!c.supabaseUrl.includes("VOTRE_")&&!c.supabaseAnonKey.includes("VOTRE_");
 }
 
-function getLatestObservedStage() {
-  const observed = STAGE_DEFINITIONS.filter((stage) => !!stage.date)
-    .sort((a, b) => new Date(a.date) - new Date(b.date));
-  return observed.at(-1) || null;
+function biofix(){return STAGES.find(s=>s.id===7&&s.date)?.date||null;}
+
+function renderStages(){
+ stageTableBody.innerHTML=STAGES.map(s=>`<tr><td><strong>Stade ${s.id}</strong></td><td>${s.simple}</td><td>${s.tech}</td><td>${s.date?fd(s.date):"—"}</td></tr>`).join("");
 }
 
-function getStatusBadge(status) {
-  if (status === "Validé") return `<span class="badge badge-valid">Validé</span>`;
-  if (status === "En cours") return `<span class="badge badge-pending">En cours</span>`;
-  return `<span class="badge badge-none">Pas de contamination</span>`;
+function warn(t){
+ supabaseConfigMessage.textContent=t;
+ supabaseConfigMessage.classList.remove("hidden");
 }
 
-function getCompletionBadge(done) {
-  return done
-    ? `<span class="badge badge-done">Terminé</span>`
-    : `<span class="badge badge-open">Non terminé</span>`;
+function clearWarn(){supabaseConfigMessage.classList.add("hidden");}
+
+async function load(){
+ if(!sb){records=[...DEMO];refresh();return;}
+ const {data,error}=await sb.from(window.SAM_CONFIG.countsTable||"tavelure_comptages").select("*").order("date_obs").order("heure_obs");
+ if(error){console.error(error);warn("Impossible de lire Supabase. Les données de démonstration sont affichées.");records=[...DEMO];}
+ else{clearWarn();records=data||[];}
+ refresh();
 }
 
-function fillSummaryCards() {
-  const biofix = getBiofixDate();
-  const lastStage = getLatestObservedStage();
-  const lastRecord = [...SPORE_RECORDS].sort((a, b) => new Date(a.start) - new Date(b.start)).at(-1);
-
-  document.getElementById("biofixValue").textContent = biofix ? formatDate(biofix) : "Non défini";
-  document.getElementById("latestStageValue").textContent = lastStage ? `Stade ${lastStage.id}` : "Aucun";
-  document.getElementById("latestStageMeta").textContent = lastStage
-    ? `${lastStage.shortLabel} — observé le ${formatDate(lastStage.date)}`
-    : "Aucune date renseignée";
-
-  document.getElementById("lastCountValue").textContent = lastRecord
-    ? `${formatNumber(lastRecord.spores)} spores`
-    : "—";
-  document.getElementById("lastCountMeta").textContent = lastRecord
-    ? `${lastRecord.episode} · ${formatDateTime(lastRecord.start)} à ${new Date(lastRecord.end).toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" })}`
-    : "—";
-
-  document.getElementById("seasonStatusValue").textContent = MONITORING.seasonClosed ? "Terminé" : "En cours";
-  document.getElementById("seasonStatusMeta").textContent = MONITORING.seasonClosed
-    ? `Fin du suivi indiquée le ${formatDate(MONITORING.closedOn)}`
-    : "La saison de projection est encore en cours";
+function filtered(){
+ const j0=biofix(),start=startDateInput.value||j0||"",end=endDateInput.value||"";
+ return records.filter(r=>(!j0||r.date_obs>=j0)&&(!start||r.date_obs>=start)&&(!end||r.date_obs<=end))
+ .sort((a,b)=>`${a.date_obs}T${a.heure_obs||"00:00"}`.localeCompare(`${b.date_obs}T${b.heure_obs||"00:00"}`));
 }
 
-function renderStageTable() {
-  const body = document.getElementById("stageTableBody");
-  body.innerHTML = STAGE_DEFINITIONS.map((stage) => `
-    <tr>
-      <td><strong>Stade ${stage.id}</strong></td>
-      <td>${stage.shortLabel}</td>
-      <td>${stage.technicalLabel}</td>
-      <td>${stage.date ? formatDate(stage.date) : "—"}</td>
-    </tr>
-  `).join("");
+function episodes(src){
+ const m=new Map();
+ src.forEach(r=>{
+  const k=r.episode||"Épisode sans nom";
+  if(!m.has(k))m.set(k,{episode:k,date_obs:r.date_obs,heure_obs:r.heure_obs||"00:00",pluie_mm:0,spores:0,has:false,statuts:[],done:[]});
+  const x=m.get(k);
+  if(`${r.date_obs}T${r.heure_obs||"00:00"}`<`${x.date_obs}T${x.heure_obs}`){x.date_obs=r.date_obs;x.heure_obs=r.heure_obs||"00:00";}
+  x.pluie_mm+=Number(r.pluie_mm)||0;
+  if(r.spores!==null&&r.spores!==undefined&&r.spores!==""){x.spores+=Number(r.spores)||0;x.has=true;}
+  x.statuts.push(r.statut);x.done.push(Boolean(r.comptage_termine));
+ });
+ return [...m.values()].map(x=>({...x,pluie_mm:+x.pluie_mm.toFixed(1),spores:x.has?x.spores:null,statut:x.statuts.includes("En cours")?"En cours":((x.spores||0)===0?"Pas de contamination":"Validé"),comptage_termine:x.done.every(Boolean)}))
+ .sort((a,b)=>`${a.date_obs}T${a.heure_obs}`.localeCompare(`${b.date_obs}T${b.heure_obs}`));
 }
 
-function floorToBucket(date, bucketHours) {
-  const d = new Date(date);
-  d.setMinutes(0, 0, 0);
-  const hour = d.getHours();
-  d.setHours(Math.floor(hour / bucketHours) * bucketHours);
-  return d;
+function badge(s){
+ if(s==="Validé")return '<span class="badge badge-valid">Validé</span>';
+ if(s==="En cours")return '<span class="badge badge-pending">En cours</span>';
+ return '<span class="badge badge-none">Pas de contamination</span>';
+}
+function done(v){return v?'<span class="badge badge-done">Terminé</span>':'<span class="badge badge-open">Non terminé</span>';}
+
+function summary(){
+ const j0=biofix(),ls=[...STAGES].filter(s=>s.date).sort((a,b)=>a.date.localeCompare(b.date)).at(-1);
+ const lr=[...records].sort((a,b)=>`${a.date_obs}T${a.heure_obs||"00:00"}`.localeCompare(`${b.date_obs}T${b.heure_obs||"00:00"}`)).at(-1);
+ biofixValue.textContent=j0?fd(j0):"Non défini";
+ latestStageValue.textContent=ls?`Stade ${ls.id}`:"—";
+ latestStageMeta.textContent=ls?`${ls.simple} — ${fd(ls.date)}`:"Aucune date renseignée";
+ lastCountValue.textContent=lr?(lr.spores==null?"Comptage en cours":`${fn(lr.spores)} spores`):"—";
+ lastCountMeta.textContent=lr?`${lr.episode} · ${fdt(lr.date_obs,lr.heure_obs)}`:"—";
+ seasonStatusValue.textContent=MONITORING.seasonClosed?"Terminé":"En cours";
+ seasonStatusMeta.textContent=MONITORING.seasonClosed?`Fin du suivi le ${fd(MONITORING.closedOn)}`:"Le suivi des projections est encore en cours";
 }
 
-function isoDateOnly(dateTime) {
-  return dateTime.slice(0, 10);
+function draw(){
+ const j0=biofix();
+ if(!j0){biofixWarning.classList.remove("hidden");if(chart)chart.destroy();return;}
+ biofixWarning.classList.add("hidden");
+ const e=episodes(filtered());
+ if(chart)chart.destroy();
+ chart=new Chart(sporeChart,{
+  data:{labels:e.map(x=>`${x.episode} · ${fd(x.date_obs)}`),datasets:[
+   {type:"bar",label:"Pluviométrie (mm)",data:e.map(x=>x.pluie_mm),backgroundColor:"rgba(43,121,194,.75)",borderColor:"#2b79c2",borderWidth:1,borderRadius:4,yAxisID:"yRain"},
+   {type:"line",label:"Spores observées",data:e.map(x=>x.spores),borderColor:"#cf1e2e",backgroundColor:"#cf1e2e",tension:.25,pointRadius:4,spanGaps:false,yAxisID:"ySpores"}]},
+  options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:"bottom",labels:{usePointStyle:true,boxWidth:8,padding:18}},tooltip:{intersect:false,mode:"index"}},scales:{
+   x:{grid:{display:false},ticks:{maxRotation:0,autoSkip:true,maxTicksLimit:12}},
+   yRain:{beginAtZero:true,position:"left",title:{display:true,text:"Pluie (mm)"},grid:{color:"rgba(102,113,124,.13)"}},
+   ySpores:{beginAtZero:true,position:"right",title:{display:true,text:"Nombre de spores"},grid:{drawOnChartArea:false}}
+  }}
+ });
 }
 
-function parseFilters() {
-  return {
-    mode: document.getElementById("displayModeSelect").value,
-    bucketHours: Number(document.getElementById("bucketHoursSelect").value),
-    startDate: document.getElementById("startDateInput").value,
-    endDate: document.getElementById("endDateInput").value
-  };
+function history(){
+ const f=filtered();
+ historyTableBody.innerHTML=f.length?f.map(r=>`<tr><td><strong>${r.episode}</strong></td><td>${fdt(r.date_obs,r.heure_obs)}</td><td>${fn(r.pluie_mm||0)} mm</td><td>${r.spores==null?"—":fn(r.spores)}</td><td>${badge(r.statut)}</td><td>${done(Boolean(r.comptage_termine))}</td></tr>`).join(""):'<tr><td colspan="6">Aucune donnée sur la période sélectionnée.</td></tr>';
 }
 
-function filterRecords() {
-  const biofix = getBiofixDate();
-  if (!biofix) return [];
-  const { startDate, endDate } = parseFilters();
-  const effectiveStart = startDate || biofix;
+function refresh(){summary();draw();history();}
 
-  return SPORE_RECORDS
-    .filter((record) => isoDateOnly(record.start) >= biofix)
-    .filter((record) => isoDateOnly(record.start) >= effectiveStart)
-    .filter((record) => !endDate || isoDateOnly(record.start) <= endDate)
-    .sort((a, b) => new Date(a.start) - new Date(b.start));
+function reset(){
+ const j0=biofix(),last=[...records].sort((a,b)=>a.date_obs.localeCompare(b.date_obs)).at(-1)?.date_obs||"";
+ startDateInput.value=j0||"";endDateInput.value=last;refresh();
 }
 
-function aggregateTimeSlots(records, bucketHours) {
-  const grouped = new Map();
-
-  records.forEach((record) => {
-    const bucketStart = floorToBucket(record.start, bucketHours);
-    const key = bucketStart.toISOString();
-
-    if (!grouped.has(key)) {
-      const bucketEnd = new Date(bucketStart.getTime() + bucketHours * 3600000);
-      grouped.set(key, {
-        label: `${formatDateTime(bucketStart.toISOString())} → ${bucketEnd.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" })}`,
-        rain: 0,
-        spores: 0,
-        statuses: [],
-        countingDoneFlags: [],
-        start: bucketStart.toISOString(),
-        end: bucketEnd.toISOString()
-      });
-    }
-
-    const item = grouped.get(key);
-    item.rain += Number(record.rain) || 0;
-    item.spores += Number(record.spores) || 0;
-    item.statuses.push(record.status);
-    item.countingDoneFlags.push(record.countingDone);
-  });
-
-  return [...grouped.values()].map((item) => ({
-    category: item.label,
-    rain: Number(item.rain.toFixed(1)),
-    spores: item.spores,
-    status: deriveStatus(item.statuses, item.spores),
-    countingDone: item.countingDoneFlags.every(Boolean),
-    exportStart: item.start,
-    exportEnd: item.end
-  }));
+function exportCsv(){
+ const e=episodes(filtered());if(!e.length)return;
+ const rows=[["episode","date","heure","pluie_mm","spores","statut","comptage_termine"],...e.map(x=>[x.episode,x.date_obs,x.heure_obs,String(x.pluie_mm).replace(".",","),x.spores??"",x.statut,x.comptage_termine?"oui":"non"])];
+ const csv=rows.map(r=>r.map(c=>`"${String(c).replaceAll('"','""')}"`).join(";")).join("\n");
+ const blob=new Blob(["\ufeff",csv],{type:"text/csv;charset=utf-8;"}),url=URL.createObjectURL(blob),a=document.createElement("a");
+ a.href=url;a.download="sam-tavelure-episodes.csv";document.body.appendChild(a);a.click();a.remove();URL.revokeObjectURL(url);
 }
 
-function aggregateEpisodes(records) {
-  const grouped = new Map();
-
-  records.forEach((record) => {
-    if (!grouped.has(record.episode)) {
-      grouped.set(record.episode, {
-        episode: record.episode,
-        rain: 0,
-        spores: 0,
-        statuses: [],
-        countingDoneFlags: [],
-        starts: [],
-        ends: []
-      });
-    }
-
-    const item = grouped.get(record.episode);
-    item.rain += Number(record.rain) || 0;
-    item.spores += Number(record.spores) || 0;
-    item.statuses.push(record.status);
-    item.countingDoneFlags.push(record.countingDone);
-    item.starts.push(record.start);
-    item.ends.push(record.end);
-  });
-
-  return [...grouped.values()].map((item) => {
-    item.starts.sort();
-    item.ends.sort();
-    return {
-      category: `${item.episode} · ${formatDate(item.starts[0].slice(0, 10))}`,
-      rain: Number(item.rain.toFixed(1)),
-      spores: item.spores,
-      status: deriveStatus(item.statuses, item.spores),
-      countingDone: item.countingDoneFlags.every(Boolean),
-      exportStart: item.starts[0],
-      exportEnd: item.ends.at(-1),
-      episode: item.episode
-    };
-  });
+async function adminUi(){
+ if(!sb){
+  adminConnectionBadge.textContent="Supabase non configuré";
+  loginBlock.classList.remove("hidden");entryBlock.classList.add("hidden");
+  warn("Renseigne l'URL et la clé publique Supabase dans config.js pour activer la saisie administrateur.");
+  return;
+ }
+ const {data}=await sb.auth.getSession(),u=data.session?.user||null;
+ loginBlock.classList.toggle("hidden",Boolean(u));entryBlock.classList.toggle("hidden",!u);
+ adminConnectionBadge.textContent=u?"Administrateur connecté":"Non connecté";
+ adminConnectionBadge.classList.toggle("connected",Boolean(u));
 }
 
-function deriveStatus(statuses, sporesTotal) {
-  if (statuses.includes("En cours")) return "En cours";
-  if (sporesTotal === 0) return "Pas de contamination";
-  return "Validé";
+async function login(ev){
+ ev.preventDefault();if(!sb){warn("Supabase doit d'abord être configuré dans config.js.");return;}
+ loginMessage.textContent="Connexion…";
+ const {error}=await sb.auth.signInWithPassword({email:adminEmail.value.trim(),password:adminPassword.value});
+ loginMessage.textContent=error?`Connexion impossible : ${error.message}`:"";
+ await adminUi();
 }
 
-function getDisplayedRows() {
-  const filters = parseFilters();
-  const records = filterRecords();
-  return filters.mode === "episode"
-    ? aggregateEpisodes(records)
-    : aggregateTimeSlots(records, filters.bucketHours);
+async function addEntry(ev){
+ ev.preventDefault();if(!sb){warn("Supabase doit être configuré avant toute saisie.");return;}
+ const s=entrySpores.value;
+ const payload={episode:entryEpisode.value.trim(),date_obs:entryDate.value,heure_obs:entryTime.value,pluie_mm:Number(entryRain.value),spores:s===""?null:Number(s),statut:entryStatus.value,comptage_termine:entryDone.checked};
+ entryMessage.textContent="Enregistrement…";
+ const {error}=await sb.from(window.SAM_CONFIG.countsTable||"tavelure_comptages").insert(payload);
+ if(error){entryMessage.textContent=`Enregistrement impossible : ${error.message}`;return;}
+ entryMessage.textContent="Comptage enregistré.";manualEntryForm.reset();await load();
 }
 
-function buildChart() {
-  const biofix = getBiofixDate();
-  const warning = document.getElementById("biofixWarning");
-  const canvas = document.getElementById("sporeChart");
-
-  if (!biofix) {
-    warning.classList.remove("hidden");
-    if (sporeChart) sporeChart.destroy();
-    return;
-  }
-
-  warning.classList.add("hidden");
-  displayedRows = getDisplayedRows();
-
-  if (sporeChart) sporeChart.destroy();
-
-  sporeChart = new Chart(canvas, {
-    data: {
-      labels: displayedRows.map((row) => row.category),
-      datasets: [
-        {
-          type: "bar",
-          label: "Pluviométrie (mm)",
-          data: displayedRows.map((row) => row.rain),
-          backgroundColor: "rgba(43, 121, 194, 0.75)",
-          borderColor: "#2b79c2",
-          borderWidth: 1,
-          borderRadius: 4,
-          yAxisID: "yRain"
-        },
-        {
-          type: "line",
-          label: "Spores observées",
-          data: displayedRows.map((row) => row.spores),
-          borderColor: "#cf1e2e",
-          backgroundColor: "#cf1e2e",
-          tension: 0.25,
-          pointRadius: 3,
-          yAxisID: "ySpores"
-        }
-      ]
-    },
-    options: {
-      ...chartBaseOptions,
-      scales: {
-        x: chartBaseOptions.scales.x,
-        yRain: {
-          beginAtZero: true,
-          position: "left",
-          title: { display: true, text: "Pluie (mm)" },
-          grid: { color: "rgba(102, 113, 124, 0.13)" }
-        },
-        ySpores: {
-          beginAtZero: true,
-          position: "right",
-          title: { display: true, text: "Nombre de spores" },
-          grid: { drawOnChartArea: false }
-        }
-      }
-    }
-  });
-}
-
-function renderGraphTable() {
-  const filters = parseFilters();
-  document.getElementById("historyCol1").textContent = filters.mode === "episode" ? "Épisode" : "Tranche / période";
-
-  const body = document.getElementById("graphTableBody");
-  body.innerHTML = displayedRows.length
-    ? displayedRows.map((row) => `
-      <tr>
-        <td>${row.category}</td>
-        <td>${formatNumber(row.rain)}</td>
-        <td>${formatNumber(row.spores)}</td>
-        <td>${getStatusBadge(row.status)}</td>
-        <td>${getCompletionBadge(row.countingDone)}</td>
-      </tr>
-    `).join("")
-    : `<tr><td colspan="5">Aucune donnée sur la période sélectionnée.</td></tr>`;
-}
-
-function exportDisplayedRows() {
-  if (!displayedRows.length) return;
-  const filters = parseFilters();
-  const header = filters.mode === "episode"
-    ? ["episode_ou_periode", "debut", "fin", "pluie_mm", "spores", "statut", "comptage_termine"]
-    : ["tranche_ou_periode", "debut", "fin", "pluie_mm", "spores", "statut", "comptage_termine"];
-
-  const rows = displayedRows.map((row) => [
-    row.category,
-    row.exportStart,
-    row.exportEnd,
-    String(row.rain).replace(".", ","),
-    String(row.spores).replace(".", ","),
-    row.status,
-    row.countingDone ? "oui" : "non"
-  ]);
-
-  const csvContent = [header, ...rows]
-    .map((line) => line.map((cell) => `"${String(cell).replaceAll('"', '""')}"`).join(";"))
-    .join("\n");
-
-  const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
-  const url = URL.createObjectURL(blob);
-  const link = document.createElement("a");
-  link.href = url;
-  link.download = `sam-tavelure-${filters.mode}.csv`;
-  document.body.appendChild(link);
-  link.click();
-  link.remove();
-  URL.revokeObjectURL(url);
-}
-
-function initFilters() {
-  const biofix = getBiofixDate();
-  const lastDate = [...SPORE_RECORDS].sort((a, b) => new Date(a.start) - new Date(b.start)).at(-1)?.start.slice(0, 10) || "";
-
-  document.getElementById("startDateInput").value = biofix || "";
-  document.getElementById("endDateInput").value = lastDate;
-
-  document.getElementById("displayModeSelect").addEventListener("change", refreshTavelureView);
-  document.getElementById("bucketHoursSelect").addEventListener("change", refreshTavelureView);
-  document.getElementById("startDateInput").addEventListener("change", refreshTavelureView);
-  document.getElementById("endDateInput").addEventListener("change", refreshTavelureView);
-
-  document.getElementById("resetFiltersButton").addEventListener("click", () => {
-    document.getElementById("displayModeSelect").value = "timeslot";
-    document.getElementById("bucketHoursSelect").value = "3";
-    document.getElementById("startDateInput").value = biofix || "";
-    document.getElementById("endDateInput").value = lastDate;
-    refreshTavelureView();
-  });
-
-  document.getElementById("exportGraphButton").addEventListener("click", exportDisplayedRows);
-}
-
-function refreshTavelureView() {
-  buildChart();
-  renderGraphTable();
-}
-
-document.addEventListener("DOMContentLoaded", () => {
-  fillSummaryCards();
-  renderStageTable();
-  initFilters();
-  refreshTavelureView();
+document.addEventListener("DOMContentLoaded",async()=>{
+ renderStages();
+ startDateInput.addEventListener("change",refresh);endDateInput.addEventListener("change",refresh);
+ resetFiltersButton.addEventListener("click",reset);exportGraphButton.addEventListener("click",exportCsv);
+ adminLoginForm.addEventListener("submit",login);manualEntryForm.addEventListener("submit",addEntry);
+ logoutButton.addEventListener("click",async()=>{if(sb)await sb.auth.signOut();await adminUi();});
+ if(configured()&&window.supabase){sb=window.supabase.createClient(window.SAM_CONFIG.supabaseUrl,window.SAM_CONFIG.supabaseAnonKey);sb.auth.onAuthStateChange(()=>adminUi());}
+ await load();reset();await adminUi();
 });

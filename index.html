@@ -3,16 +3,19 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="SAM Tavelure – suivi des périthèces, biofix et projections de spores.">
-  <meta name="theme-color" content="#e1064b">
+  <meta name="description" content="SAM Tavelure – suivi des périthèces, des projections de spores et de la pluviométrie associée.">
+  <meta name="theme-color" content="#d31145">
   <title>SAM Tavelure</title>
-  <link rel="preconnect" href="https://cdn.jsdelivr.net">
+  <link rel="icon" type="image/png" href="favicon.png">
+  <link rel="apple-touch-icon" href="favicon.png">
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
   <header class="topbar">
     <div class="brand">
-      <img src="logo-sudexpe.jpg" alt="Logo SudExpé" class="brand-logo">
+      <div class="logo-shell">
+        <img src="logo-sudexpe-trimmed.png" alt="Logo SudExpé" class="brand-logo">
+      </div>
       <div>
         <p class="brand-kicker">Sud Agro Météo</p>
         <h1>SAM Tavelure</h1>
@@ -22,18 +25,15 @@
 
   <main>
     <section class="hero panel">
-      <div>
-        <p class="eyebrow">Suivi tavelure pomme</p>
-        <h2>Suivi des périthèces, du biofix et des projections de spores</h2>
-        <p class="hero-text">
-          Cette page est dédiée uniquement à la tavelure. Elle regroupe le suivi des stades de maturation,
-          le calcul du biofix J0, les comptages de spores issus du piège Marchi et la pluviométrie associée.
-        </p>
-      </div>
-      <div class="hero-badge">Page publique en lecture seule</div>
+      <p class="eyebrow">Suivi tavelure</p>
+      <h2>Suivi des périthèces et des projections de spores</h2>
+      <p class="hero-text">
+        Cette page sert à suivre les stades de maturation, les comptages de spores issus du piège Marchi
+        et la pluviométrie associée.
+      </p>
     </section>
 
-    <section class="summary-grid" aria-label="Indicateurs clés">
+    <section class="summary-grid">
       <article class="summary-card">
         <p class="summary-label">Biofix J0</p>
         <p class="summary-value" id="biofixValue">—</p>
@@ -63,17 +63,16 @@
           <h3>Stades de maturation observés</h3>
         </div>
       </div>
-      <div class="notice compact">
-        <strong>Lecture simple :</strong>
-        le <strong>stade 7</strong> correspond au moment où les spores sont prêtes à être projetées.
-        Le <strong>J0 (biofix)</strong> est défini par la première date où ce stade apparaît.
+      <div class="notice">
+        <strong>Repère :</strong> le stade 7 correspond au moment où les spores sont prêtes à être projetées.
+        Le J0 est défini par la première date où ce stade apparaît.
       </div>
       <div class="table-wrap">
         <table>
           <thead>
             <tr>
               <th>Stade</th>
-              <th>Lecture vulgarisée</th>
+              <th>Lecture simplifiée</th>
               <th>Formulation technique</th>
               <th>Date observée</th>
             </tr>
@@ -86,52 +85,28 @@
     <section class="panel">
       <div class="panel-header">
         <div>
-          <p class="panel-kicker">Graphique spores + pluie</p>
-          <h3>Visualisation à partir du biofix J0</h3>
+          <p class="panel-kicker">Spores + pluie</p>
+          <h3>Projections observées par épisode</h3>
         </div>
       </div>
-
       <div class="controls">
-        <label>
-          Affichage
-          <select id="displayModeSelect">
-            <option value="timeslot">Par tranche horaire</option>
-            <option value="episode">Par épisode</option>
-          </select>
-        </label>
-
-        <label>
-          Regroupement horaire
-          <select id="bucketHoursSelect">
-            <option value="1">1 h</option>
-            <option value="3" selected>3 h</option>
-            <option value="6">6 h</option>
-            <option value="12">12 h</option>
-            <option value="24">24 h</option>
-          </select>
-        </label>
-
         <label>
           Date de début
           <input id="startDateInput" type="date">
         </label>
-
         <label>
           Date de fin
           <input id="endDateInput" type="date">
         </label>
-
         <div class="actions">
           <button id="resetFiltersButton" class="secondary-button" type="button">Réinitialiser</button>
-          <button id="exportGraphButton" class="primary-button" type="button">Exporter le graphique en CSV</button>
+          <button id="exportGraphButton" class="primary-button" type="button">Exporter en CSV</button>
         </div>
       </div>
-
       <div id="biofixWarning" class="warning-box hidden">
-        Le graphique ne peut démarrer qu’à partir du biofix. Renseigne d’abord une date pour le stade 7.
+        Le graphique commence à partir du J0, défini par l'apparition du stade 7.
       </div>
-
-      <div class="chart-wrap large">
+      <div class="chart-wrap">
         <canvas id="sporeChart" aria-label="Graphique des spores observées et de la pluviométrie"></canvas>
       </div>
     </section>
@@ -140,51 +115,101 @@
       <article class="panel">
         <div class="panel-header">
           <div>
-            <p class="panel-kicker">Données affichées</p>
-            <h3>Historique du graphique</h3>
+            <p class="panel-kicker">Historique</p>
+            <h3>Données de comptage</h3>
           </div>
         </div>
         <div class="table-wrap">
           <table>
             <thead>
               <tr>
-                <th id="historyCol1">Période / épisode</th>
-                <th>Pluie (mm)</th>
+                <th>Épisode</th>
+                <th>Date / heure</th>
+                <th>Pluie</th>
                 <th>Spores</th>
                 <th>Statut</th>
                 <th>Comptage</th>
               </tr>
             </thead>
-            <tbody id="graphTableBody"></tbody>
+            <tbody id="historyTableBody"></tbody>
           </table>
         </div>
       </article>
 
-      <article class="panel">
+      <article class="panel admin-panel">
         <div class="panel-header">
           <div>
-            <p class="panel-kicker">Organisation recommandée</p>
-            <h3>Saisie manuelle réservée à l’administrateur</h3>
+            <p class="panel-kicker">Administration</p>
+            <h3>Saisie manuelle d'un comptage</h3>
           </div>
+          <span id="adminConnectionBadge" class="connection-badge">Non connecté</span>
         </div>
-        <div class="interpretation-box">
-          <p>
-            <strong>Version actuelle :</strong> cette page est volontairement en lecture seule pour les producteurs.
-          </p>
-          <p>
-            <strong>Solution réaliste :</strong> garder cette page publique en lecture seule, et alimenter les données
-            depuis une source modifiable uniquement par toi (par exemple un Google Sheet avec droits d’édition limités,
-            ou une base Supabase avec compte administrateur).
-          </p>
-          <ul class="info-list">
-            <li><strong>Producteurs :</strong> accès lecture seule à la page SAM Tavelure.</li>
-            <li><strong>Toi / technicien :</strong> saisie des contaminations dans une source privée.</li>
-            <li><strong>Page publique :</strong> lecture automatique des données validées.</li>
-          </ul>
-          <p class="small-note">
-            Important : sur une simple page HTML/JavaScript statique, il n’est pas possible d’empêcher de manière sûre
-            la modification si le formulaire est directement exposé au public. Il faut donc séparer la saisie et l’affichage.
-          </p>
+
+        <div id="supabaseConfigMessage" class="warning-box hidden"></div>
+
+        <div id="loginBlock">
+          <p class="small-note">Connexion réservée aux personnes autorisées à saisir les comptages.</p>
+          <form id="adminLoginForm" class="form-grid">
+            <label>
+              Adresse e-mail
+              <input id="adminEmail" type="email" autocomplete="username" required>
+            </label>
+            <label>
+              Mot de passe
+              <input id="adminPassword" type="password" autocomplete="current-password" required>
+            </label>
+            <button class="primary-button" type="submit">Se connecter</button>
+          </form>
+          <div id="loginMessage" class="form-message"></div>
+        </div>
+
+        <div id="entryBlock" class="hidden">
+          <form id="manualEntryForm" class="form-grid">
+            <label>
+              Épisode
+              <input id="entryEpisode" type="text" placeholder="Ex. Épisode 8" required>
+            </label>
+
+            <div class="form-row">
+              <label>
+                Date
+                <input id="entryDate" type="date" required>
+              </label>
+              <label>
+                Heure
+                <input id="entryTime" type="time" required>
+              </label>
+            </div>
+
+            <div class="form-row">
+              <label>
+                Pluie (mm)
+                <input id="entryRain" type="number" min="0" step="0.1" required>
+              </label>
+              <label>
+                Nombre de spores
+                <input id="entrySpores" type="number" min="0" step="1">
+              </label>
+            </div>
+
+            <label>
+              Statut
+              <select id="entryStatus" required>
+                <option value="En cours">En cours</option>
+                <option value="Validé">Validé</option>
+                <option value="Pas de contamination">Pas de contamination</option>
+              </select>
+            </label>
+
+            <label class="checkbox-label">
+              <input id="entryDone" type="checkbox">
+              Comptage terminé
+            </label>
+
+            <button class="primary-button" type="submit">Ajouter le comptage</button>
+          </form>
+          <div id="entryMessage" class="form-message"></div>
+          <button id="logoutButton" class="secondary-button logout-button" type="button">Se déconnecter</button>
         </div>
       </article>
     </section>
@@ -192,7 +217,7 @@
     <section class="panel">
       <div class="panel-header">
         <div>
-          <p class="panel-kicker">Structure de saisie à prévoir</p>
+          <p class="panel-kicker">Structure de saisie</p>
           <h3>Champs à remplir manuellement côté administrateur</h3>
         </div>
       </div>
@@ -209,7 +234,7 @@
             <tr><td>Épisode</td><td>Épisode 5</td><td>Regrouper plusieurs tranches horaires sous une même pluie</td></tr>
             <tr><td>Début tranche</td><td>2026-03-18 03:00</td><td>Définir la période observée</td></tr>
             <tr><td>Fin tranche</td><td>2026-03-18 06:00</td><td>Fermer la tranche observée</td></tr>
-            <tr><td>Pluie (mm)</td><td>2,4</td><td>Tracer l’histogramme de pluviométrie</td></tr>
+            <tr><td>Pluie (mm)</td><td>2,4</td><td>Tracer l'histogramme de pluviométrie</td></tr>
             <tr><td>Nombre de spores</td><td>18</td><td>Tracer la courbe rouge des spores</td></tr>
             <tr><td>Statut</td><td>Validé / En cours / Pas de contamination</td><td>Qualifier le résultat</td></tr>
             <tr><td>Comptage terminé</td><td>Oui / Non</td><td>Indiquer si le résultat est finalisé</td></tr>
@@ -220,10 +245,12 @@
   </main>
 
   <footer>
-    <p>SAM Tavelure — Sud Agro Météo / SudExpé</p>
-    <p>Outil d’aide à l’observation en lecture seule.</p>
+    <p>SAM Tavelure — SudExpé</p>
+    <p>Outil d’aide à l’observation</p>
   </footer>
 
+  <script src="config.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
   <script src="app.js"></script>
 </body>

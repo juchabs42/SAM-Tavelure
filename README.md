@@ -1,13 +1,25 @@
 # SAM Tavelure
 
-Page publique en lecture seule dédiée au suivi des périthèces, du biofix et des projections de spores de tavelure.
+## GitHub Pages
+Mettre tous les fichiers à la racine du dépôt puis utiliser :
 
-## Publication GitHub Pages
+`Settings > Pages > Deploy from a branch > main > /(root)`
 
-Dans `Settings > Pages` :
+## Supabase
+1. Créer le projet Supabase.
+2. Exécuter `supabase.sql` dans **SQL Editor**.
+3. Créer ton compte administrateur dans **Authentication > Users**.
+4. Copier l'URL du projet et la clé `anon/public` dans `config.js`.
+5. Recharger la page.
 
-- Source : `Deploy from a branch`
-- Branch : `main`
-- Folder : `/(root)`
+Les producteurs peuvent consulter les données sans compte. La saisie nécessite une connexion Supabase authentifiée.
 
-Les fichiers `index.html`, `style.css`, `app.js`, `logo-sudexpe.jpg` et `.nojekyll` doivent se trouver directement à la racine du dépôt.
+## Fichiers
+- `index.html`
+- `style.css`
+- `app.js`
+- `config.js`
+- `supabase.sql`
+- `logo-sudexpe-trimmed.png`
+- `favicon.png`
+- `.nojekyll`

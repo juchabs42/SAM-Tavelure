@@ -16,10 +16,28 @@
       <div class="logo-shell">
         <img src="logo-sudexpe-trimmed.png" alt="Logo SudExpé" class="brand-logo">
       </div>
-      <div>
+      <div class="brand-copy">
         <p class="brand-kicker">Sud Agro Météo</p>
         <h1>SAM Tavelure</h1>
       </div>
+    </div>
+
+    <div class="auth-card" aria-label="Connexion">
+      <form id="loginForm" class="auth-form">
+        <input id="loginEmail" type="email" autocomplete="username" placeholder="Adresse mail" aria-label="Adresse mail" required>
+        <input id="loginPassword" type="password" autocomplete="current-password" placeholder="Mot de passe" aria-label="Mot de passe" required>
+        <button class="auth-button" type="submit">Connexion</button>
+      </form>
+
+      <div id="connectedBlock" class="connected-block hidden">
+        <div>
+          <span class="connected-label">Connecté</span>
+          <strong id="connectedEmail"></strong>
+        </div>
+        <button id="logoutButton" class="logout-button" type="button" title="Se déconnecter" aria-label="Se déconnecter">↪</button>
+      </div>
+
+      <p id="loginMessage" class="auth-message" role="status"></p>
     </div>
   </header>
 
@@ -33,28 +51,7 @@
       </p>
     </section>
 
-    <section class="summary-grid">
-      <article class="summary-card">
-        <p class="summary-label">Biofix J0</p>
-        <p class="summary-value" id="biofixValue">—</p>
-        <p class="summary-meta">Premier jour où le stade 7 apparaît</p>
-      </article>
-      <article class="summary-card">
-        <p class="summary-label">Dernier stade observé</p>
-        <p class="summary-value" id="latestStageValue">—</p>
-        <p class="summary-meta" id="latestStageMeta">—</p>
-      </article>
-      <article class="summary-card">
-        <p class="summary-label">Dernier comptage</p>
-        <p class="summary-value" id="lastCountValue">—</p>
-        <p class="summary-meta" id="lastCountMeta">—</p>
-      </article>
-      <article class="summary-card">
-        <p class="summary-label">Suivi des projections</p>
-        <p class="summary-value" id="seasonStatusValue">—</p>
-        <p class="summary-meta" id="seasonStatusMeta">—</p>
-      </article>
-    </section>
+    <div id="databaseWarning" class="warning-box hidden"></div>
 
     <section class="panel">
       <div class="panel-header">
@@ -62,13 +59,18 @@
           <p class="panel-kicker">Périthèces</p>
           <h3>Stades de maturation observés</h3>
         </div>
+        <div id="stageAdminActions" class="admin-only hidden">
+          <button id="saveStagesButton" class="primary-button" type="button">Enregistrer les dates</button>
+        </div>
       </div>
+
       <div class="notice">
         <strong>Repère :</strong> le stade 7 correspond au moment où les spores sont prêtes à être projetées.
-        Le J0 est défini par la première date où ce stade apparaît.
+        Le J0 est la première date d’observation du stade 7.
       </div>
+
       <div class="table-wrap">
-        <table>
+        <table class="stage-table">
           <thead>
             <tr>
               <th>Stade</th>
@@ -80,6 +82,7 @@
           <tbody id="stageTableBody"></tbody>
         </table>
       </div>
+      <div id="stageMessage" class="form-message admin-only hidden" role="status"></div>
     </section>
 
     <section class="panel">
@@ -88,7 +91,9 @@
           <p class="panel-kicker">Spores + pluie</p>
           <h3>Projections observées par épisode</h3>
         </div>
+        <span id="monitoringStatusBadge" class="status-pill">Suivi en cours</span>
       </div>
+
       <div class="controls">
         <label>
           Date de début
@@ -103,142 +108,109 @@
           <button id="exportGraphButton" class="primary-button" type="button">Exporter en CSV</button>
         </div>
       </div>
-      <div id="biofixWarning" class="warning-box hidden">
-        Le graphique commence à partir du J0, défini par l'apparition du stade 7.
+
+      <div id="j0Warning" class="warning-box hidden">
+        Le graphique démarrera dès qu’une date sera renseignée pour le stade 7.
       </div>
+      <div id="emptyGraphMessage" class="empty-state hidden">Aucun épisode enregistré sur la période sélectionnée.</div>
+
       <div class="chart-wrap">
         <canvas id="sporeChart" aria-label="Graphique des spores observées et de la pluviométrie"></canvas>
       </div>
     </section>
 
-    <section class="two-columns">
-      <article class="panel">
-        <div class="panel-header">
-          <div>
-            <p class="panel-kicker">Historique</p>
-            <h3>Données de comptage</h3>
-          </div>
+    <section id="episodeEntryPanel" class="panel admin-only hidden">
+      <div class="panel-header">
+        <div>
+          <p class="panel-kicker">Saisie</p>
+          <h3>Ajouter un épisode de tavelure</h3>
         </div>
-        <div class="table-wrap">
-          <table>
-            <thead>
-              <tr>
-                <th>Épisode</th>
-                <th>Date / heure</th>
-                <th>Pluie</th>
-                <th>Spores</th>
-                <th>Statut</th>
-                <th>Comptage</th>
-              </tr>
-            </thead>
-            <tbody id="historyTableBody"></tbody>
-          </table>
-        </div>
-      </article>
+      </div>
 
-      <article class="panel admin-panel">
-        <div class="panel-header">
-          <div>
-            <p class="panel-kicker">Administration</p>
-            <h3>Saisie manuelle d'un comptage</h3>
-          </div>
-          <span id="adminConnectionBadge" class="connection-badge">Non connecté</span>
+      <form id="episodeForm" class="form-grid episode-form">
+        <label>
+          Épisode
+          <input id="entryEpisode" type="text" placeholder="Ex. Épisode 1" required>
+        </label>
+
+        <div class="form-row">
+          <label>
+            Date
+            <input id="entryDate" type="date" required>
+          </label>
+          <label>
+            Heure
+            <input id="entryTime" type="time" required>
+          </label>
         </div>
 
-        <div id="supabaseConfigMessage" class="warning-box hidden"></div>
-
-        <div id="loginBlock">
-          <p class="small-note">Connexion réservée aux personnes autorisées à saisir les comptages.</p>
-          <form id="adminLoginForm" class="form-grid">
-            <label>
-              Adresse e-mail
-              <input id="adminEmail" type="email" autocomplete="username" required>
-            </label>
-            <label>
-              Mot de passe
-              <input id="adminPassword" type="password" autocomplete="current-password" required>
-            </label>
-            <button class="primary-button" type="submit">Se connecter</button>
-          </form>
-          <div id="loginMessage" class="form-message"></div>
+        <div class="form-row">
+          <label>
+            Pluie (mm)
+            <input id="entryRain" type="number" min="0" step="0.1" required>
+          </label>
+          <label>
+            Nombre de spores
+            <input id="entrySpores" type="number" min="0" step="1">
+          </label>
         </div>
 
-        <div id="entryBlock" class="hidden">
-          <form id="manualEntryForm" class="form-grid">
-            <label>
-              Épisode
-              <input id="entryEpisode" type="text" placeholder="Ex. Épisode 8" required>
-            </label>
+        <label>
+          Statut
+          <select id="entryStatus" required>
+            <option value="En cours">En cours</option>
+            <option value="Validé">Validé</option>
+            <option value="Pas de contamination">Pas de contamination</option>
+          </select>
+        </label>
 
-            <div class="form-row">
-              <label>
-                Date
-                <input id="entryDate" type="date" required>
-              </label>
-              <label>
-                Heure
-                <input id="entryTime" type="time" required>
-              </label>
-            </div>
+        <label class="checkbox-label">
+          <input id="entryDone" type="checkbox">
+          Comptage terminé
+        </label>
 
-            <div class="form-row">
-              <label>
-                Pluie (mm)
-                <input id="entryRain" type="number" min="0" step="0.1" required>
-              </label>
-              <label>
-                Nombre de spores
-                <input id="entrySpores" type="number" min="0" step="1">
-              </label>
-            </div>
+        <button class="primary-button" type="submit">Ajouter l’épisode</button>
+      </form>
+      <div id="episodeMessage" class="form-message" role="status"></div>
 
-            <label>
-              Statut
-              <select id="entryStatus" required>
-                <option value="En cours">En cours</option>
-                <option value="Validé">Validé</option>
-                <option value="Pas de contamination">Pas de contamination</option>
-              </select>
-            </label>
-
-            <label class="checkbox-label">
-              <input id="entryDone" type="checkbox">
-              Comptage terminé
-            </label>
-
-            <button class="primary-button" type="submit">Ajouter le comptage</button>
-          </form>
-          <div id="entryMessage" class="form-message"></div>
-          <button id="logoutButton" class="secondary-button logout-button" type="button">Se déconnecter</button>
+      <div class="monitoring-admin">
+        <h4>État du suivi des projections</h4>
+        <div class="form-row monitoring-row">
+          <label class="checkbox-label">
+            <input id="monitoringClosedInput" type="checkbox">
+            Suivi terminé
+          </label>
+          <label>
+            Date de fin
+            <input id="monitoringEndDateInput" type="date">
+          </label>
         </div>
-      </article>
+        <button id="saveMonitoringButton" class="secondary-button" type="button">Enregistrer l’état du suivi</button>
+        <div id="monitoringMessage" class="form-message" role="status"></div>
+      </div>
     </section>
 
     <section class="panel">
       <div class="panel-header">
         <div>
-          <p class="panel-kicker">Structure de saisie</p>
-          <h3>Champs à remplir manuellement côté administrateur</h3>
+          <p class="panel-kicker">Historique</p>
+          <h3>Données de comptage</h3>
         </div>
       </div>
+
       <div class="table-wrap">
         <table>
           <thead>
             <tr>
-              <th>Champ</th>
-              <th>Exemple</th>
-              <th>Utilité</th>
+              <th>Épisode</th>
+              <th>Date / heure</th>
+              <th>Pluie</th>
+              <th>Spores</th>
+              <th>Statut</th>
+              <th>Comptage</th>
             </tr>
           </thead>
-          <tbody>
-            <tr><td>Épisode</td><td>Épisode 5</td><td>Regrouper plusieurs tranches horaires sous une même pluie</td></tr>
-            <tr><td>Début tranche</td><td>2026-03-18 03:00</td><td>Définir la période observée</td></tr>
-            <tr><td>Fin tranche</td><td>2026-03-18 06:00</td><td>Fermer la tranche observée</td></tr>
-            <tr><td>Pluie (mm)</td><td>2,4</td><td>Tracer l'histogramme de pluviométrie</td></tr>
-            <tr><td>Nombre de spores</td><td>18</td><td>Tracer la courbe rouge des spores</td></tr>
-            <tr><td>Statut</td><td>Validé / En cours / Pas de contamination</td><td>Qualifier le résultat</td></tr>
-            <tr><td>Comptage terminé</td><td>Oui / Non</td><td>Indiquer si le résultat est finalisé</td></tr>
-          </tbody>
+          <tbody id="historyTableBody"></tbody>
         </table>
       </div>
     </section>

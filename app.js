@@ -15,6 +15,7 @@ let stageDates = new Map();
 let records = [];
 let monitoring = { suivi_termine: false, date_fin: null };
 let chart = null;
+let deferredInstallPrompt = null;
 
 const byId = (id) => document.getElementById(id);
 const formatDate = (value) => value ? new Date(`${value}T12:00:00`).toLocaleDateString("fr-FR") : "";
@@ -70,6 +71,7 @@ function renderAuth() {
     byId("connectedEmail").textContent = "";
   }
 
+  updateMobileAuthButton();
   renderStages();
 }
 
@@ -83,10 +85,10 @@ function renderStages() {
 
     return `
       <tr>
-        <td><strong>Stade ${stage.id}</strong></td>
-        <td>${stage.simple}</td>
-        <td>${stage.technical}</td>
-        <td>${dateCell}</td>
+        <td data-label="Stade"><strong>Stade ${stage.id}</strong></td>
+        <td data-label="Lecture simplifiée">${stage.simple}</td>
+        <td data-label="Formulation technique">${stage.technical}</td>
+        <td data-label="Date observée">${dateCell}</td>
       </tr>`;
   }).join("");
 }
@@ -279,7 +281,7 @@ function drawChart() {
           borderColor: "#cf1e2e",
           backgroundColor: "#cf1e2e",
           tension: 0.25,
-          pointRadius: 4,
+          pointRadius: window.innerWidth <= 720 ? 3 : 4,
           spanGaps: false,
           yAxisID: "ySpores"
         }
@@ -289,11 +291,11 @@ function drawChart() {
       responsive: true,
       maintainAspectRatio: false,
       plugins: {
-        legend: { position: "bottom", labels: { usePointStyle: true, boxWidth: 8, padding: 18 } },
+        legend: { position: "bottom", labels: { usePointStyle: true, boxWidth: 8, padding: window.innerWidth <= 720 ? 10 : 18, font: { size: window.innerWidth <= 720 ? 10 : 12 } } },
         tooltip: { intersect: false, mode: "index" }
       },
       scales: {
-        x: { grid: { display: false }, ticks: { maxRotation: 0, autoSkip: true, maxTicksLimit: 12 } },
+        x: { grid: { display: false }, ticks: { maxRotation: 0, autoSkip: true, maxTicksLimit: window.innerWidth <= 720 ? 5 : 12, font: { size: window.innerWidth <= 720 ? 10 : 12 } } },
         yRain: {
           beginAtZero: true,
           position: "left",
@@ -322,12 +324,12 @@ function renderHistory() {
 
   body.innerHTML = rows.map((row) => `
     <tr>
-      <td><strong>${row.episode}</strong></td>
-      <td>${formatDateTime(row.date_obs, row.heure_obs)}</td>
-      <td>${formatNumber(Number(row.pluie_mm) || 0)} mm</td>
-      <td>${row.spores === null || row.spores === undefined ? "" : formatNumber(Number(row.spores))}</td>
-      <td>${statusBadge(row.statut)}</td>
-      <td>${completionBadge(Boolean(row.comptage_termine))}</td>
+      <td data-label="Épisode"><strong>${row.episode}</strong></td>
+      <td data-label="Date / heure">${formatDateTime(row.date_obs, row.heure_obs)}</td>
+      <td data-label="Pluie">${formatNumber(Number(row.pluie_mm) || 0)} mm</td>
+      <td data-label="Spores">${row.spores === null || row.spores === undefined ? "" : formatNumber(Number(row.spores))}</td>
+      <td data-label="Statut">${statusBadge(row.statut)}</td>
+      <td data-label="Comptage">${completionBadge(Boolean(row.comptage_termine))}</td>
     </tr>`).join("");
 }
 
@@ -447,7 +449,114 @@ async function handleAuthState() {
   renderMonitoring();
 }
 
+
+function isStandalone() {
+  return window.matchMedia("(display-mode: standalone)").matches || window.navigator.standalone === true;
+}
+
+function isIOS() {
+  return /iphone|ipad|ipod/i.test(window.navigator.userAgent) ||
+    (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+}
+
+function isMobileDevice() {
+  if (navigator.userAgentData && typeof navigator.userAgentData.mobile === "boolean") {
+    return navigator.userAgentData.mobile;
+  }
+
+  const ua = navigator.userAgent || "";
+  const mobileUa = /Android|iPhone|iPad|iPod|IEMobile|Opera Mini|Mobile/i.test(ua);
+  const iPadDesktopMode = navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1;
+
+  return mobileUa || iPadDesktopMode;
+}
+
+function showInstallMessage(message) {
+  const box = byId("installMessage");
+  box.textContent = message;
+  box.classList.remove("hidden");
+  window.clearTimeout(showInstallMessage.timer);
+  showInstallMessage.timer = window.setTimeout(() => box.classList.add("hidden"), 6500);
+}
+
+async function installApp() {
+  if (isStandalone()) return;
+
+  if (deferredInstallPrompt) {
+    deferredInstallPrompt.prompt();
+    const result = await deferredInstallPrompt.userChoice;
+    deferredInstallPrompt = null;
+    if (result.outcome === "accepted") {
+      byId("installButton").classList.add("hidden");
+    }
+    return;
+  }
+
+  if (isIOS()) {
+    showInstallMessage("Sur iPhone/iPad : ouvre cette page dans Safari, touche Partager, puis « Sur l’écran d’accueil ».");
+  } else {
+    showInstallMessage("Si l’installation ne s’ouvre pas, utilise le menu du navigateur puis « Installer l’application » ou « Ajouter à l’écran d’accueil ».");
+  }
+}
+
+function initPWA() {
+  const installButton = byId("installButton");
+  const mobile = isMobileDevice();
+
+  document.documentElement.classList.toggle("mobile-device", mobile);
+
+  // Le bouton n'est jamais affiché sur ordinateur.
+  // Sur téléphone/tablette, il reste visible même si beforeinstallprompt
+  // n'est pas encore disponible : un clic affichera alors les instructions.
+  if (!mobile || isStandalone()) {
+    installButton.classList.add("hidden");
+  } else {
+    installButton.classList.remove("hidden");
+  }
+
+  window.addEventListener("beforeinstallprompt", (event) => {
+    event.preventDefault();
+    deferredInstallPrompt = event;
+
+    if (mobile && !isStandalone()) {
+      installButton.classList.remove("hidden");
+    }
+  });
+
+  window.addEventListener("appinstalled", () => {
+    deferredInstallPrompt = null;
+    installButton.classList.add("hidden");
+    showInstallMessage("SAM Tavelure est installée.");
+  });
+
+  if ("serviceWorker" in navigator) {
+    window.addEventListener("load", async () => {
+      try {
+        const registration = await navigator.serviceWorker.register("./service-worker.js");
+        await registration.update();
+      } catch (error) {
+        console.error("Service worker non enregistré", error);
+      }
+    });
+  }
+}
+
+function toggleMobileAuth() {
+  const card = byId("authCard");
+  const button = byId("authToggleButton");
+  const open = card.classList.toggle("open");
+  button.setAttribute("aria-expanded", String(open));
+}
+
+function updateMobileAuthButton() {
+  const button = byId("authToggleButton");
+  if (!button) return;
+  button.textContent = currentUser ? "Compte" : "Connexion";
+}
+
 function bindEvents() {
+  byId("installButton").addEventListener("click", installApp);
+  byId("authToggleButton").addEventListener("click", toggleMobileAuth);
   byId("loginForm").addEventListener("submit", login);
   byId("logoutButton").addEventListener("click", logout);
   byId("saveStagesButton").addEventListener("click", saveStages);
@@ -461,6 +570,7 @@ function bindEvents() {
 
 document.addEventListener("DOMContentLoaded", async () => {
   bindEvents();
+  initPWA();
   renderStages();
 
   if (!isConfigured()) {

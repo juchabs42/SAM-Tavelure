@@ -1,7 +1,7 @@
 window.SAM_CONFIG = {
   // À remplacer par les valeurs du projet Supabase.
-  supabaseUrl: "VOTRE_SUPABASE_URL",
-  supabaseAnonKey: "VOTRE_SUPABASE_PUBLISHABLE_KEY",
+  supabaseUrl: "https://wpsjtkrznsqjvwxtockk.supabase.co",
+  supabaseAnonKey: "sb_publishable_3CPhpYn7LPeVOrAUEDaHTA_RDQPRP7A",
 
   countsTable: "tavelure_comptages",
   stagesTable: "tavelure_peritheces",

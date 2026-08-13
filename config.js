@@ -1,5 +1,5 @@
 window.SAM_CONFIG = {
-  supabaseUrl: "VOTRE_SUPABASE_URL",
-  supabaseAnonKey: "VOTRE_SUPABASE_ANON_KEY",
+  supabaseUrl: "https://wpsjtkrznsqjvwxtockk.supabase.co",
+  supabaseAnonKey: "sb_publishable_3CPhpYn7LPeVOrAUEDaHTA_RDQPRP7A",
   countsTable: "tavelure_comptages"
 };

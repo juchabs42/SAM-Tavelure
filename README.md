@@ -57,3 +57,16 @@ Tous les fichiers du ZIP doivent être à la racine du dépôt :
 - `logo-sudexpe-trimmed.png`
 - `favicon.png`
 - `.nojekyll`
+
+## Icône dans l’onglet du navigateur
+La V6 contient les favicons issus du logo SAM Tavelure :
+- `favicon.ico`
+- `favicon-16x16.png`
+- `favicon-32x32.png`
+- `apple-touch-icon.png`
+- `icon-192.png`
+- `icon-512.png`
+- `site.webmanifest`
+
+Tous ces fichiers doivent rester à la racine du dépôt GitHub avec `index.html`.
+Après mise à jour, le navigateur peut conserver l’ancienne icône en cache : faire `Ctrl + F5` ou vider le cache du site.

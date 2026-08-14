@@ -531,6 +531,13 @@ function initPWA() {
   const installCard = byId("installCard");
   const installButton = byId("installButton");
   const mobile = isMobileDevice();
+
+  // Si la page est ouverte depuis l'application installée, on mémorise cet état
+  // pour ne plus reproposer l'installation lors des ouvertures suivantes dans le navigateur.
+  if (isStandalone()) {
+    markAppInstalled();
+  }
+
   const alreadyInstalled = isStandalone() || isAppMarkedInstalled();
 
   if (!mobile || alreadyInstalled) {
@@ -547,6 +554,18 @@ function initPWA() {
       installButton.classList.remove("hidden");
     }
   });
+
+
+  const standaloneMedia = window.matchMedia("(display-mode: standalone)");
+  const handleDisplayModeChange = () => {
+    if (isStandalone()) {
+      markAppInstalled();
+      installCard.classList.add("hidden");
+    }
+  };
+  if (standaloneMedia.addEventListener) {
+    standaloneMedia.addEventListener("change", handleDisplayModeChange);
+  }
 
   window.addEventListener("appinstalled", () => {
     deferredInstallPrompt = null;

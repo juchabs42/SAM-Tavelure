@@ -1,4 +1,4 @@
-const CACHE_NAME = "sam-tavelure-v7-2";
+const CACHE_NAME = "sam-tavelure-v8-1";
 const CORE_ASSETS = [
   "./",
   "./index.html",
@@ -12,7 +12,8 @@ const CORE_ASSETS = [
   "./apple-touch-icon.png",
   "./icon-192.png",
   "./icon-512.png",
-  "./logo-sudexpe-trimmed.png"
+  "./logo-sudexpe-trimmed.png",
+  "./logo-sam-tavelure.png"
 ];
 
 self.addEventListener("install", (event) => {
@@ -36,11 +37,8 @@ self.addEventListener("fetch", (event) => {
   if (request.method !== "GET") return;
 
   const url = new URL(request.url);
-
-  // Les appels Supabase restent toujours réseau : on ne met pas les données métier en cache.
   if (url.hostname.includes("supabase.co")) return;
 
-  // Navigation et fichiers de code : réseau d'abord pour récupérer rapidement les mises à jour GitHub.
   if (request.mode === "navigate" || ["script", "style", "manifest"].includes(request.destination)) {
     event.respondWith(
       fetch(request)
@@ -54,7 +52,6 @@ self.addEventListener("fetch", (event) => {
     return;
   }
 
-  // Images et ressources statiques : cache d'abord.
   event.respondWith(
     caches.match(request).then((cached) => {
       if (cached) return cached;

@@ -5,6 +5,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="description" content="SAM Tavelure – suivi des périthèces, des projections de spores et de la pluviométrie associée.">
   <meta name="theme-color" content="#d31145">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="SAM Tavelure">
   <title>SAM Tavelure</title>
   <link rel="icon" href="favicon.ico" sizes="any">
   <link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
@@ -16,8 +20,11 @@
 <body>
   <header class="topbar">
     <div class="brand">
-      <div class="logo-shell">
+      <div class="logo-shell sud-shell">
         <img src="logo-sudexpe-trimmed.png" alt="Logo SudExpé" class="brand-logo">
+      </div>
+      <div class="logo-shell sam-shell">
+        <img src="logo-sam-tavelure.png" alt="Logo SAM Tavelure" class="brand-logo app-brand-logo">
       </div>
       <div class="brand-copy">
         <p class="brand-kicker">Sud Agro Météo</p>
@@ -25,7 +32,8 @@
       </div>
     </div>
 
-    <div class="auth-card" aria-label="Connexion">
+    <div id="authCard" class="auth-card" aria-label="Connexion">
+      <p class="auth-card-title mobile-only">Connexion</p>
       <form id="loginForm" class="auth-form">
         <input id="loginEmail" type="email" autocomplete="username" placeholder="Adresse mail" aria-label="Adresse mail" required>
         <input id="loginPassword" type="password" autocomplete="current-password" placeholder="Mot de passe" aria-label="Mot de passe" required>
@@ -54,6 +62,23 @@
       </p>
     </section>
 
+    <section id="installCard" class="panel install-panel mobile-only hidden" aria-label="Installer l'application">
+      <div class="install-panel-header">
+        <div class="install-panel-logo-wrap">
+          <img src="logo-sam-tavelure.png" alt="Logo SAM Tavelure" class="install-panel-logo">
+        </div>
+        <div>
+          <p class="panel-kicker">Application</p>
+          <h3>Installer l'application</h3>
+          <p class="install-panel-text">Ajoute SAM Tavelure sur l’écran d’accueil pour l’utiliser plus facilement sur téléphone.</p>
+        </div>
+      </div>
+      <div class="install-panel-actions">
+        <button id="installButton" class="primary-button install-card-button" type="button">Installer l’application</button>
+      </div>
+      <div id="installMessage" class="install-inline-message hidden" role="status"></div>
+    </section>
+
     <div id="databaseWarning" class="warning-box hidden"></div>
 
     <section class="panel">
@@ -73,7 +98,7 @@
       </div>
 
       <div class="table-wrap">
-        <table class="stage-table">
+        <table class="stage-table mobile-card-table">
           <thead>
             <tr>
               <th>Stade</th>
@@ -202,7 +227,7 @@
       </div>
 
       <div class="table-wrap">
-        <table>
+        <table class="history-table mobile-card-table">
           <thead>
             <tr>
               <th>Épisode</th>

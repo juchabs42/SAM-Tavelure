@@ -71,7 +71,6 @@ function renderAuth() {
     byId("connectedEmail").textContent = "";
   }
 
-  updateMobileAuthButton();
   renderStages();
 }
 
@@ -467,7 +466,6 @@ function isMobileDevice() {
   const ua = navigator.userAgent || "";
   const mobileUa = /Android|iPhone|iPad|iPod|IEMobile|Opera Mini|Mobile/i.test(ua);
   const iPadDesktopMode = navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1;
-
   return mobileUa || iPadDesktopMode;
 }
 
@@ -476,7 +474,7 @@ function showInstallMessage(message) {
   box.textContent = message;
   box.classList.remove("hidden");
   window.clearTimeout(showInstallMessage.timer);
-  showInstallMessage.timer = window.setTimeout(() => box.classList.add("hidden"), 6500);
+  showInstallMessage.timer = window.setTimeout(() => box.classList.add("hidden"), 7000);
 }
 
 async function installApp() {
@@ -487,7 +485,7 @@ async function installApp() {
     const result = await deferredInstallPrompt.userChoice;
     deferredInstallPrompt = null;
     if (result.outcome === "accepted") {
-      byId("installButton").classList.add("hidden");
+      byId("installCard").classList.add("hidden");
     }
     return;
   }
@@ -500,32 +498,28 @@ async function installApp() {
 }
 
 function initPWA() {
+  const installCard = byId("installCard");
   const installButton = byId("installButton");
   const mobile = isMobileDevice();
 
-  document.documentElement.classList.toggle("mobile-device", mobile);
-
-  // Le bouton n'est jamais affiché sur ordinateur.
-  // Sur téléphone/tablette, il reste visible même si beforeinstallprompt
-  // n'est pas encore disponible : un clic affichera alors les instructions.
   if (!mobile || isStandalone()) {
-    installButton.classList.add("hidden");
+    installCard.classList.add("hidden");
   } else {
-    installButton.classList.remove("hidden");
+    installCard.classList.remove("hidden");
   }
 
   window.addEventListener("beforeinstallprompt", (event) => {
     event.preventDefault();
     deferredInstallPrompt = event;
-
     if (mobile && !isStandalone()) {
+      installCard.classList.remove("hidden");
       installButton.classList.remove("hidden");
     }
   });
 
   window.addEventListener("appinstalled", () => {
     deferredInstallPrompt = null;
-    installButton.classList.add("hidden");
+    installCard.classList.add("hidden");
     showInstallMessage("SAM Tavelure est installée.");
   });
 
@@ -541,22 +535,9 @@ function initPWA() {
   }
 }
 
-function toggleMobileAuth() {
-  const card = byId("authCard");
-  const button = byId("authToggleButton");
-  const open = card.classList.toggle("open");
-  button.setAttribute("aria-expanded", String(open));
-}
-
-function updateMobileAuthButton() {
-  const button = byId("authToggleButton");
-  if (!button) return;
-  button.textContent = currentUser ? "Compte" : "Connexion";
-}
 
 function bindEvents() {
   byId("installButton").addEventListener("click", installApp);
-  byId("authToggleButton").addEventListener("click", toggleMobileAuth);
   byId("loginForm").addEventListener("submit", login);
   byId("logoutButton").addEventListener("click", logout);
   byId("saveStagesButton").addEventListener("click", saveStages);

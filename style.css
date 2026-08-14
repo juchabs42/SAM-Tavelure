@@ -1,3 +1,4 @@
+
 :root {
   --brand: #d31145;
   --brand-dark: #aa0d38;
@@ -25,13 +26,15 @@ body {
 button, select, input { font: inherit; }
 button { cursor: pointer; }
 
+.mobile-only { display: none !important; }
+
 .topbar {
   position: sticky;
   top: 0;
   z-index: 30;
   display: flex;
   align-items: center;
-  gap: 24px;
+  gap: 22px;
   min-height: 88px;
   padding: 10px clamp(16px, 3.5vw, 52px);
   color: #fff;
@@ -41,21 +44,30 @@ button { cursor: pointer; }
 .brand {
   display: flex;
   align-items: center;
-  gap: 14px;
+  gap: 12px;
   min-width: max-content;
 }
 .logo-shell {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 148px;
-  height: 58px;
-  padding: 7px 9px;
   overflow: hidden;
   border-radius: 11px;
   background: #fff;
+  flex: none;
 }
-.brand-logo { width: 100%; height: 100%; object-fit: contain; }
+.sud-shell {
+  width: 148px;
+  height: 58px;
+  padding: 7px 9px;
+}
+.sam-shell {
+  width: 62px;
+  height: 58px;
+  padding: 5px;
+}
+.brand-logo { width: 100%; height: 100%; object-fit: contain; display:block; }
+.app-brand-logo { border-radius: 10px; }
 .brand-kicker {
   margin: 0;
   font-size: 0.7rem;
@@ -73,6 +85,12 @@ button { cursor: pointer; }
   border-radius: 13px;
   background: rgba(255,255,255,.12);
   backdrop-filter: blur(6px);
+}
+.auth-card-title {
+  margin: 0 0 8px;
+  color: #fff;
+  font-size: .86rem;
+  font-weight: 800;
 }
 .auth-form {
   display: grid;
@@ -280,6 +298,51 @@ th {
 .monitoring-admin h4 { margin: 0 0 12px; }
 .monitoring-row { margin-bottom: 12px; }
 
+.install-panel {
+  border-color: #f1c5d0;
+  background: linear-gradient(180deg, #fff 0%, #fff7fa 100%);
+}
+.install-panel-header {
+  display: flex;
+  gap: 14px;
+  align-items: center;
+}
+.install-panel-logo-wrap {
+  width: 66px;
+  height: 66px;
+  flex: none;
+  border-radius: 16px;
+  overflow: hidden;
+  background: #fff;
+  box-shadow: inset 0 0 0 1px #f0d3da;
+}
+.install-panel-logo {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display:block;
+}
+.install-panel-text {
+  margin: 6px 0 0;
+  color: var(--muted);
+  font-size: .92rem;
+}
+.install-panel-actions {
+  margin-top: 14px;
+}
+.install-card-button {
+  width: 100%;
+  min-height: 46px;
+}
+.install-inline-message {
+  margin-top: 12px;
+  padding: 10px 12px;
+  border-radius: 11px;
+  color: #6b2438;
+  background: var(--brand-light);
+  font-size: .84rem;
+}
+
 footer {
   display: flex;
   justify-content: space-between;
@@ -296,111 +359,45 @@ footer p { margin: 0; }
   .auth-card { width: 100%; margin-left: 0; }
   .actions { margin-left: 0; width: 100%; }
 }
-@media (max-width: 720px) {
-  main { width: min(100% - 22px,1240px); padding-top: 20px; }
-  .topbar { position: static; padding: 10px 14px; }
-  .logo-shell { width: 112px; height: 48px; }
-  .brand-kicker { display: none; }
-  .brand h1 { font-size: 1.08rem; }
-  .auth-form { grid-template-columns: 1fr; }
-  .controls { display: grid; }
-  .controls label { min-width: 0; }
-  .actions { display: grid; }
-  .form-row { grid-template-columns: 1fr; }
-  .chart-wrap { min-height: 330px; }
-  footer { display: grid; }
-}
-
-/* --- PWA / installation --- */
-.topbar-actions {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-left: auto;
-}
-
-.install-button {
-  display: none;
-}
-
-.install-button,
-.auth-toggle-button {
-  min-height: 40px;
-  padding: 0 13px;
-  border: 1px solid rgba(255,255,255,.58);
-  border-radius: 10px;
-  color: #fff;
-  background: rgba(255,255,255,.12);
-  font-weight: 800;
-  white-space: nowrap;
-}
-
-.install-button:hover,
-.auth-toggle-button:hover {
-  background: rgba(255,255,255,.2);
-}
-
-.auth-toggle-button { display: none; }
-
-.install-message {
-  position: absolute;
-  right: clamp(16px,3.5vw,52px);
-  top: calc(100% + 8px);
-  width: min(380px, calc(100vw - 28px));
-  padding: 11px 13px;
-  border-radius: 11px;
-  color: var(--ink);
-  background: #fff;
-  box-shadow: 0 12px 28px rgba(32,40,50,.18);
-  font-size: .82rem;
-}
-
-/* Le bouton Installer est activé uniquement si app.js détecte un appareil mobile. */
-html.mobile-device .install-button:not(.hidden) {
-  display: inline-flex;
-  align-items: center;
-}
-
-@media (display-mode: standalone) {
-  .install-button { display: none !important; }
-}
-
-@media (max-width: 980px) {
-  .topbar-actions { margin-left: auto; }
-  .auth-card { order: 3; }
-}
 
 @media (max-width: 720px) {
   html { -webkit-text-size-adjust: 100%; }
+  body { padding-bottom: env(safe-area-inset-bottom); }
 
-  body {
-    padding-bottom: env(safe-area-inset-bottom);
-  }
+  .mobile-only { display: block !important; }
 
   .topbar {
     position: sticky;
     top: 0;
     display: grid;
-    grid-template-columns: minmax(0,1fr) auto;
-    gap: 8px 10px;
+    grid-template-columns: 1fr;
+    gap: 10px;
     min-height: 68px;
-    padding: calc(8px + env(safe-area-inset-top)) 10px 8px;
+    padding: calc(8px + env(safe-area-inset-top)) 10px 10px;
   }
 
   .brand {
     min-width: 0;
-    gap: 9px;
+    gap: 8px;
+    align-items: center;
   }
 
-  .logo-shell {
-    width: 82px;
-    height: 40px;
+  .sud-shell {
+    width: 86px;
+    height: 42px;
     padding: 5px 6px;
     border-radius: 9px;
-    flex: none;
+  }
+
+  .sam-shell {
+    width: 42px;
+    height: 42px;
+    padding: 3px;
+    border-radius: 9px;
   }
 
   .brand-copy { min-width: 0; }
+  .brand-kicker { display: none; }
   .brand h1 {
     overflow: hidden;
     font-size: 1rem;
@@ -408,41 +405,15 @@ html.mobile-device .install-button:not(.hidden) {
     white-space: nowrap;
   }
 
-  .topbar-actions {
-    gap: 6px;
-    margin-left: 0;
-  }
-
-  .install-button,
-  .auth-toggle-button {
-    min-height: 38px;
-    padding: 0 9px;
-    font-size: .78rem;
-  }
-
-  .auth-toggle-button { display: inline-flex; align-items: center; }
-
   .auth-card {
-    display: none;
-    grid-column: 1 / -1;
     width: 100%;
-    margin: 0;
-    padding: 9px;
+    margin-left: 0;
+    padding: 10px;
+    border-radius: 14px;
+    background: rgba(255,255,255,.15);
   }
-
-  .auth-card.open { display: block; }
-  .auth-form { grid-template-columns: 1fr; gap: 7px; }
+  .auth-form { grid-template-columns: 1fr; }
   .auth-card input, .auth-button { min-height: 44px; }
-
-  .install-message {
-    position: fixed;
-    z-index: 60;
-    top: auto;
-    right: 10px;
-    bottom: calc(12px + env(safe-area-inset-bottom));
-    left: 10px;
-    width: auto;
-  }
 
   main {
     width: min(100% - 16px, 1240px);
@@ -470,11 +441,14 @@ html.mobile-device .install-button:not(.hidden) {
   }
 
   .controls {
+    display: grid;
     gap: 10px;
     padding: 12px;
   }
+  .controls label { min-width: 0; }
 
   .actions {
+    display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 8px;
   }
@@ -487,7 +461,6 @@ html.mobile-device .install-button:not(.hidden) {
 
   .chart-wrap { min-height: 300px; }
 
-  /* Les tableaux deviennent des cartes sur téléphone. */
   .mobile-card-table,
   .mobile-card-table thead,
   .mobile-card-table tbody,
@@ -496,9 +469,7 @@ html.mobile-device .install-button:not(.hidden) {
     display: block;
     width: 100%;
   }
-
   .mobile-card-table thead { display: none; }
-
   .mobile-card-table tr {
     margin-bottom: 10px;
     padding: 10px 11px;
@@ -506,7 +477,6 @@ html.mobile-device .install-button:not(.hidden) {
     border-radius: 12px;
     background: #fff;
   }
-
   .mobile-card-table td {
     display: grid;
     grid-template-columns: minmax(92px, 34%) 1fr;
@@ -516,7 +486,6 @@ html.mobile-device .install-button:not(.hidden) {
     border-bottom: 1px solid #eef1f3;
     align-items: start;
   }
-
   .mobile-card-table td:last-child { border-bottom: 0; }
   .mobile-card-table td::before {
     content: attr(data-label);
@@ -528,19 +497,8 @@ html.mobile-device .install-button:not(.hidden) {
   }
 
   .stage-date-input { min-width: 0; }
+  .install-panel-header { align-items: flex-start; }
+  .install-panel-logo-wrap { width: 58px; height: 58px; border-radius: 14px; }
 
-  .status-pill {
-    flex: none;
-    max-width: 48%;
-    text-align: center;
-  }
-
-  .form-grid { max-width: none; }
-  .form-row { gap: 10px; }
-
-  footer {
-    padding: 18px 14px calc(18px + env(safe-area-inset-bottom));
-    gap: 5px;
-    text-align: center;
-  }
+  footer { display: grid; }
 }

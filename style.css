@@ -418,16 +418,23 @@ footer p { margin: 0; }
     height: 48px;
     padding: 0;
     margin-left: auto;
-    border: 2px solid rgba(255,255,255,.92);
+    border: 0;
     border-radius: 50%;
-    color: #fff;
-    background: var(--brand);
-    box-shadow: 0 5px 14px rgba(92, 7, 32, .28);
+    background: transparent;
+    box-shadow: 0 5px 14px rgba(92, 7, 32, .24);
+    overflow: hidden;
+  }
+
+  .auth-toggle-icon {
+    display: block;
+    width: 48px;
+    height: 48px;
+    object-fit: cover;
+    border-radius: 50%;
   }
 
   .auth-toggle-button:active {
     transform: scale(.96);
-    background: var(--brand-dark);
   }
 
   .auth-card {

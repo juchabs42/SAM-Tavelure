@@ -16,6 +16,8 @@ let records = [];
 let monitoring = { suivi_termine: false, date_fin: null };
 let chart = null;
 let deferredInstallPrompt = null;
+const INSTALL_STORAGE_KEY = "samTavelureInstalled";
+
 
 const byId = (id) => document.getElementById(id);
 const formatDate = (value) => value ? new Date(`${value}T12:00:00`).toLocaleDateString("fr-FR") : "";
@@ -395,11 +397,13 @@ async function login(event) {
 
   byId("loginMessage").textContent = "";
   byId("loginPassword").value = "";
+  closeMobileAuthCard();
 }
 
 async function logout() {
   if (!supabaseClient) return;
   await supabaseClient.auth.signOut();
+  closeMobileAuthCard();
 }
 
 async function addEpisode(event) {
@@ -449,6 +453,31 @@ async function handleAuthState() {
 }
 
 
+function toggleMobileAuthCard() {
+  const card = byId("authCard");
+  const button = byId("authToggleButton");
+  if (!card || !button || window.innerWidth > 720) return;
+  const open = card.classList.toggle("open");
+  button.setAttribute("aria-expanded", String(open));
+}
+
+function closeMobileAuthCard() {
+  const card = byId("authCard");
+  const button = byId("authToggleButton");
+  if (!card || !button || window.innerWidth > 720) return;
+  card.classList.remove("open");
+  button.setAttribute("aria-expanded", "false");
+}
+
+function isAppMarkedInstalled() {
+  return window.localStorage.getItem(INSTALL_STORAGE_KEY) === "1";
+}
+
+function markAppInstalled() {
+  window.localStorage.setItem(INSTALL_STORAGE_KEY, "1");
+}
+
+
 function isStandalone() {
   return window.matchMedia("(display-mode: standalone)").matches || window.navigator.standalone === true;
 }
@@ -485,6 +514,7 @@ async function installApp() {
     const result = await deferredInstallPrompt.userChoice;
     deferredInstallPrompt = null;
     if (result.outcome === "accepted") {
+      markAppInstalled();
       byId("installCard").classList.add("hidden");
     }
     return;
@@ -501,8 +531,9 @@ function initPWA() {
   const installCard = byId("installCard");
   const installButton = byId("installButton");
   const mobile = isMobileDevice();
+  const alreadyInstalled = isStandalone() || isAppMarkedInstalled();
 
-  if (!mobile || isStandalone()) {
+  if (!mobile || alreadyInstalled) {
     installCard.classList.add("hidden");
   } else {
     installCard.classList.remove("hidden");
@@ -511,7 +542,7 @@ function initPWA() {
   window.addEventListener("beforeinstallprompt", (event) => {
     event.preventDefault();
     deferredInstallPrompt = event;
-    if (mobile && !isStandalone()) {
+    if (mobile && !isStandalone() && !isAppMarkedInstalled()) {
       installCard.classList.remove("hidden");
       installButton.classList.remove("hidden");
     }
@@ -519,6 +550,7 @@ function initPWA() {
 
   window.addEventListener("appinstalled", () => {
     deferredInstallPrompt = null;
+    markAppInstalled();
     installCard.classList.add("hidden");
     showInstallMessage("SAM Tavelure est installée.");
   });
@@ -538,6 +570,7 @@ function initPWA() {
 
 function bindEvents() {
   byId("installButton").addEventListener("click", installApp);
+  byId("authToggleButton").addEventListener("click", toggleMobileAuthCard);
   byId("loginForm").addEventListener("submit", login);
   byId("logoutButton").addEventListener("click", logout);
   byId("saveStagesButton").addEventListener("click", saveStages);

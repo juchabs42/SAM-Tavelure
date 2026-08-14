@@ -1,4 +1,4 @@
-const CACHE_NAME = "sam-tavelure-v8-1";
+const CACHE_NAME = "sam-tavelure-v8-2";
 const CORE_ASSETS = [
   "./",
   "./index.html",
@@ -13,7 +13,8 @@ const CORE_ASSETS = [
   "./icon-192.png",
   "./icon-512.png",
   "./logo-sudexpe-trimmed.png",
-  "./logo-sam-tavelure.png"
+  "./logo-sam-tavelure.png",
+  "./auth-toggle-icon.png"
 ];
 
 self.addEventListener("install", (event) => {

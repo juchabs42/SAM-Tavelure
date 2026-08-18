@@ -21,9 +21,17 @@ const INSTALL_STORAGE_KEY = "samTavelureInstalled";
 
 const byId = (id) => document.getElementById(id);
 const formatDate = (value) => value ? new Date(`${value}T12:00:00`).toLocaleDateString("fr-FR") : "";
-const formatDateTime = (date, time) => new Date(`${date}T${time || "00:00"}:00`).toLocaleString("fr-FR", {
-  day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit"
-});
+const formatDateTime = (date, time) => {
+  if (!date) return "";
+
+  const dateParts = String(date).slice(0, 10).split("-");
+  if (dateParts.length !== 3) return "";
+
+  const [year, month, day] = dateParts;
+  const cleanTime = String(time || "00:00").slice(0, 5);
+
+  return `${day}/${month}/${year} à ${cleanTime}`;
+};
 const formatNumber = (value) => new Intl.NumberFormat("fr-FR", { maximumFractionDigits: 1 }).format(value);
 
 function isConfigured() {
@@ -50,14 +58,7 @@ function getJ0() {
 
 function statusBadge(status) {
   if (status === "Validé") return '<span class="badge badge-valid">Validé</span>';
-  if (status === "En cours") return '<span class="badge badge-pending">En cours</span>';
   return '<span class="badge badge-none">Pas de contamination</span>';
-}
-
-function completionBadge(done) {
-  return done
-    ? '<span class="badge badge-done">Terminé</span>'
-    : '<span class="badge badge-open">Non terminé</span>';
 }
 
 function renderAuth() {
@@ -317,9 +318,10 @@ function drawChart() {
 function renderHistory() {
   const rows = filteredRecords();
   const body = byId("historyTableBody");
+  const columnCount = currentUser ? 6 : 5;
 
   if (!rows.length) {
-    body.innerHTML = '<tr><td colspan="6">Aucune donnée enregistrée.</td></tr>';
+    body.innerHTML = `<tr><td colspan="${columnCount}">Aucune donnée enregistrée.</td></tr>`;
     return;
   }
 
@@ -330,7 +332,7 @@ function renderHistory() {
       <td data-label="Pluie">${formatNumber(Number(row.pluie_mm) || 0)} mm</td>
       <td data-label="Spores">${row.spores === null || row.spores === undefined ? "" : formatNumber(Number(row.spores))}</td>
       <td data-label="Statut">${statusBadge(row.statut)}</td>
-      <td data-label="Comptage">${completionBadge(Boolean(row.comptage_termine))}</td>
+      ${currentUser ? `<td data-label="Action"><button class="delete-count-button" type="button" data-delete-count-id="${row.id}">Supprimer</button></td>` : ""}
     </tr>`).join("");
 }
 
@@ -351,15 +353,14 @@ function exportCsv() {
   const rows = filteredRecords();
   if (!rows.length) return;
 
-  const header = ["episode", "date", "heure", "pluie_mm", "spores", "statut", "comptage_termine"];
+  const header = ["episode", "date", "heure", "pluie_mm", "spores", "statut"];
   const values = rows.map((row) => [
     row.episode,
     row.date_obs,
     row.heure_obs,
     String(row.pluie_mm ?? "").replace(".", ","),
     row.spores ?? "",
-    row.statut,
-    row.comptage_termine ? "oui" : "non"
+    row.statut
   ]);
 
   const csv = [header, ...values]
@@ -421,7 +422,7 @@ async function addEpisode(event) {
     pluie_mm: Number(byId("entryRain").value),
     spores: sporesRaw === "" ? null : Number(sporesRaw),
     statut: byId("entryStatus").value,
-    comptage_termine: byId("entryDone").checked
+    comptage_termine: true
   };
 
   const { error } = await supabaseClient
@@ -440,6 +441,35 @@ async function addEpisode(event) {
   resetFilters();
 }
 
+async function deleteCount(id) {
+  if (!supabaseClient || !currentUser || !id) return;
+
+  const row = records.find((item) => String(item.id) === String(id));
+  const label = row ? `${row.episode} du ${formatDate(row.date_obs)}` : "ce comptage";
+
+  if (!window.confirm(`Supprimer ${label} ? Cette action est définitive.`)) return;
+
+  const { error } = await supabaseClient
+    .from(CONFIG.countsTable || "tavelure_comptages")
+    .delete()
+    .eq("id", id);
+
+  if (error) {
+    console.error(error);
+    window.alert(`Suppression impossible : ${error.message}`);
+    return;
+  }
+
+  await loadRecords();
+  resetFilters();
+}
+
+function handleHistoryClick(event) {
+  const button = event.target.closest("[data-delete-count-id]");
+  if (!button) return;
+  deleteCount(button.dataset.deleteCountId);
+}
+
 async function handleAuthState() {
   if (!supabaseClient) {
     currentUser = null;
@@ -450,6 +480,7 @@ async function handleAuthState() {
   currentUser = data.session?.user || null;
   renderAuth();
   renderMonitoring();
+  renderHistory();
 }
 
 
@@ -599,6 +630,7 @@ function bindEvents() {
   byId("endDateInput").addEventListener("change", refreshDataViews);
   byId("resetFiltersButton").addEventListener("click", resetFilters);
   byId("exportGraphButton").addEventListener("click", exportCsv);
+  byId("historyTableBody").addEventListener("click", handleHistoryClick);
 }
 
 document.addEventListener("DOMContentLoaded", async () => {

@@ -537,3 +537,26 @@ footer p { margin: 0; }
 
   footer { display: grid; }
 }
+
+
+/* Suppression d'un comptage — visible uniquement pour un utilisateur connecté */
+.delete-count-button {
+  min-height: 36px;
+  padding: 6px 10px;
+  border: 1px solid #c83b4c;
+  border-radius: 8px;
+  color: #a61f31;
+  background: #fff;
+  font-weight: 750;
+}
+
+.delete-count-button:hover {
+  background: #fff0f2;
+}
+
+@media (max-width: 720px) {
+  .delete-count-button {
+    width: 100%;
+    min-height: 42px;
+  }
+}

@@ -190,18 +190,11 @@
         <label>
           Statut
           <select id="entryStatus" required>
-            <option value="En cours">En cours</option>
             <option value="Validé">Validé</option>
             <option value="Pas de contamination">Pas de contamination</option>
           </select>
         </label>
-
-        <label class="checkbox-label">
-          <input id="entryDone" type="checkbox">
-          Comptage terminé
-        </label>
-
-        <button class="primary-button" type="submit">Ajouter l’épisode</button>
+<button class="primary-button" type="submit">Ajouter l’épisode</button>
       </form>
       <div id="episodeMessage" class="form-message" role="status"></div>
 
@@ -239,7 +232,7 @@
               <th>Pluie</th>
               <th>Spores</th>
               <th>Statut</th>
-              <th>Comptage</th>
+              <th class="admin-only hidden">Action</th>
             </tr>
           </thead>
           <tbody id="historyTableBody"></tbody>
